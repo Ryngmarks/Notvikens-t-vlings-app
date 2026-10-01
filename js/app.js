@@ -103,7 +103,8 @@
     countTo($('[data-stat="rounds"]'), stats.rounds);
     countTo($('[data-stat="players"]'), stats.players);
 
-    const max = Math.max(1, ...list.map((p) => Math.max(p.wins, p.losses)));
+    // Stapelns längd = spelade omgångar relativt den som spelat mest
+    const max = Math.max(1, ...list.map((p) => p.wins + p.losses));
     const ol = $('[data-board]');
     $('[data-board-empty]').hidden = list.length > 0;
 
@@ -122,9 +123,12 @@
         li.dataset.id = p.id;
         li.innerHTML = `
           <span class="lb-num lb-num--win" data-wins>0</span>
-          <span class="lb-bar lb-bar--win"><i></i></span>
-          <span class="lb-name"><b class="lb-rank"></b><span class="lb-player"></span><small class="lb-pct"></small></span>
-          <span class="lb-bar lb-bar--loss"><i></i></span>
+          <div class="lb-main">
+            <b class="lb-rank"></b>
+            <span class="lb-player"></span>
+            <small class="lb-pct"></small>
+            <span class="lb-bar"><i class="lb-bar__win"></i><i class="lb-bar__loss"></i></span>
+          </div>
           <span class="lb-num lb-num--loss" data-losses>0</span>`;
         li.style.setProperty('--delay', `${Math.min(i, 14) * 40}ms`);
         li.classList.add('is-entering');
@@ -142,8 +146,8 @@
       ol.appendChild(li);
 
       const setBars = () => {
-        $('.lb-bar--win i', li).style.setProperty('--p', p.wins / max);
-        $('.lb-bar--loss i', li).style.setProperty('--p', p.losses / max);
+        $('.lb-bar__win', li).style.setProperty('--p', p.wins / max);
+        $('.lb-bar__loss', li).style.setProperty('--p', p.losses / max);
         countTo($('[data-wins]', li), p.wins);
         countTo($('[data-losses]', li), p.losses);
       };
@@ -407,6 +411,7 @@
     $$('[data-view]').forEach((el) => { el.hidden = el.dataset.view !== view; });
     $$('[data-tab]').forEach((el) => el.classList.toggle('is-active', el.dataset.tab === view));
     document.body.classList.toggle('is-flow', view === 'training');
+    document.body.dataset.page = view;
     if (view === 'training') startFlow();
     if (view === 'players') renderPlayers();
     if (view === 'board') {
@@ -532,7 +537,15 @@
 
   /* ---------------- Start ---------------- */
 
+  function loadHeroPhoto() {
+    // Valfritt foto bakom toppen: lägg en bild som assets/hero.jpg
+    const img = new Image();
+    img.onload = () => $('[data-hero-bg]').style.setProperty('--hero-photo', `url("${img.src}")`);
+    img.src = 'assets/hero.jpg';
+  }
+
   async function init() {
+    loadHeroPhoto();
     $('[data-team-name]').textContent = TEAM.name;
     $('[data-team-sub]').textContent = TEAM.sub;
     await refresh();

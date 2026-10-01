@@ -33,6 +33,7 @@ supabase/schema.sql  tabeller för Supabase
 ## Logotyp & färger
 
 - Loggan ligger i `assets/logo.png` – byt filen för att byta logga.
+- Valfritt: lägg ett stämningsfoto som `assets/hero.jpg` så visas det (svartvitt, tonat) bakom toppen på tavlan. Utan foto används en CSS-version med strålkastare.
 - Färgerna styrs av CSS-variablerna överst i `css/styles.css`:
   `--primary`, `--secondary`, `--accent`, `--background`, `--surface`, `--text`, `--muted`.
 
