@@ -1,12 +1,15 @@
 /*
- * Supabase-inställningar.
- * Hämtas i Supabase: Project Settings → API (eller Data API).
- *   SUPABASE_URL      = "Project URL", t.ex. https://abcdefgh.supabase.co
- *   SUPABASE_ANON_KEY = "anon public"-nyckeln (publishable key)
+ * Supabase-inställningar. Lämnas fälten tomma körs appen i demo-läge.
  *
- * Lämnas fälten tomma körs appen i demo-läge med påhittad data.
+ * Hitta värdena i Supabase-projektet (eller via knappen "Connect" högst upp):
+ *   SUPABASE_URL  Project Settings → Data API → Project URL
+ *                 t.ex. https://abcdefgh.supabase.co
+ *   SUPABASE_KEY  Project Settings → API Keys → "Publishable key" (sb_publishable_…)
+ *                 eller fliken "Legacy API Keys" → "anon public" (eyJ…). Båda fungerar.
+ *
+ * Använd ALDRIG "Secret key" / "service_role" här – den ger full åtkomst.
  */
 window.APP_CONFIG = {
   SUPABASE_URL: '',
-  SUPABASE_ANON_KEY: '',
+  SUPABASE_KEY: '',
 };

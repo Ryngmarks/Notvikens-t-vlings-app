@@ -45,11 +45,14 @@ supabase/schema.sql  tabeller för Supabase
 
 1. Skapa ett projekt på [supabase.com](https://supabase.com) (gratisnivån räcker).
 2. **SQL Editor → New query**, klistra in hela `supabase/schema.sql` och kör.
-3. **Project Settings → API**: kopiera *Project URL* och *anon public*-nyckeln.
-4. Klistra in dem i `js/config.js`.
+3. Kopiera två värden (finns även under knappen **Connect** högst upp i projektet):
+   - **Project Settings → Data API → Project URL**
+   - **Project Settings → API Keys → Publishable key** (`sb_publishable_…`).
+     Äldre projekt: fliken *Legacy API Keys* → *anon public* (`eyJ…`). Båda fungerar.
+4. Klistra in dem i `js/config.js` (`SUPABASE_URL` och `SUPABASE_KEY`).
 5. Lägg till lagets spelare under **Spelare** i appen.
 
-anon-nyckeln är gjord för att ligga i webbläsaren, så den får finnas i koden.
+Publishable-/anon-nyckeln är gjord för att ligga i webbläsaren, så den får finnas i koden. Använd aldrig *Secret key* / *service_role*.
 Ingen inloggning: alla med länken kan registrera resultat och ändra spelare, men inget kan raderas via appen.
 
 En "omgång" = alla `results` med samma `training_session_id` och `created_at`.

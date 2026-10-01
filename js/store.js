@@ -1,7 +1,7 @@
 /*
  * Datalager. Appen anropar bara funktionerna i `Store` (alla async).
  *
- *  - Supabase-läge: om SUPABASE_URL och SUPABASE_ANON_KEY är ifyllda i js/config.js.
+ *  - Supabase-läge: om SUPABASE_URL och SUPABASE_KEY är ifyllda i js/config.js.
  *    Pratar direkt med Supabase REST-API (PostgREST) via fetch – inget bibliotek behövs.
  *  - Demo-läge: annars. Påhittad data som sparas i webbläsarens localStorage.
  *
@@ -22,12 +22,16 @@
     const api = baseUrl.replace(/\/+$/, '') + '/rest/v1/';
     const PAGE = 1000; // Supabase returnerar max 1000 rader per anrop
 
+    // Nya nycklar (sb_publishable_…) skickas bara som apikey.
+    // Äldre anon-nycklar är JWT:er (eyJ…) och skickas även som Bearer-token.
+    const auth = key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {};
+
     async function request(path, { method = 'GET', body, headers = {} } = {}) {
       const res = await fetch(api + path, {
         method,
         headers: {
           apikey: key,
-          Authorization: `Bearer ${key}`,
+          ...auth,
           'Content-Type': 'application/json',
           ...headers,
         },
@@ -185,7 +189,8 @@
     };
   }
 
-  window.Store = cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY
-    ? createSupabaseStore(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY)
+  const supabaseKey = (cfg.SUPABASE_KEY || cfg.SUPABASE_ANON_KEY || '').trim();
+  window.Store = cfg.SUPABASE_URL && supabaseKey
+    ? createSupabaseStore(cfg.SUPABASE_URL.trim(), supabaseKey)
     : createDemoStore();
 })();
