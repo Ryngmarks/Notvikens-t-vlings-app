@@ -190,7 +190,20 @@
     };
   }
 
-  const supabaseKey = (cfg.SUPABASE_KEY || cfg.SUPABASE_ANON_KEY || '').trim();
+  let supabaseKey = (cfg.SUPABASE_KEY || cfg.SUPABASE_ANON_KEY || '').trim();
+
+  // Spärr: hemliga nycklar ger full åtkomst och får aldrig ligga i webbläsaren
+  const isSecret = (k) => {
+    if (k.startsWith('sb_secret_')) return true;
+    try { return JSON.parse(atob(k.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).role === 'service_role'; }
+    catch (e) { return false; }
+  };
+  if (supabaseKey && isSecret(supabaseKey)) {
+    console.error('js/config.js innehåller en HEMLIG Supabase-nyckel. Använd "Publishable key" (sb_publishable_…) och byt ut den hemliga nyckeln i Supabase.');
+    alert('Fel nyckel i js/config.js: det är en hemlig nyckel. Använd "Publishable key" (sb_publishable_…). Appen körs i demo-läge tills det är rättat.');
+    supabaseKey = '';
+  }
+
   window.Store = cfg.SUPABASE_URL && supabaseKey
     ? createSupabaseStore(cfg.SUPABASE_URL.trim(), supabaseKey)
     : createDemoStore();
