@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>NIK Träningsliga</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- ============ LEADERBOARD ============ -->
+    <section class="view" data-view="board">
+      <header class="hero">
+        <div class="hero__brand">
+          <img class="hero__logo" src="assets/logo.png" onerror="this.onerror=null;this.src='assets/logo.svg'" alt="Notvikens IK">
+          <div>
+            <p class="eyebrow" data-team-sub>Träningsligan</p>
+            <h1 class="hero__title" data-team-name>Notvikens IK</h1>
+          </div>
+        </div>
+        <dl class="stats">
+          <div class="stat"><dd data-stat="trainings">0</dd><dt>Träningar</dt></div>
+          <div class="stat"><dd data-stat="rounds">0</dd><dt>Spelade omgångar</dt></div>
+          <div class="stat"><dd data-stat="players">0</dd><dt>Spelare</dt></div>
+        </dl>
+      </header>
+
+      <div class="active-training" data-active-training hidden>
+        <span class="pulse"></span>
+        <div class="active-training__text">
+          <strong>Pågående träning</strong>
+          <span data-active-training-info></span>
+        </div>
+        <button class="btn btn--small btn--primary" data-action="resume-training">Fortsätt</button>
+      </div>
+
+      <nav class="segmented" data-filter aria-label="Filtrera speltyp">
+        <span class="segmented__indicator"></span>
+        <button data-filter-value="total" class="is-active">Total</button>
+        <button data-filter-value="small">5v5</button>
+        <button data-filter-value="medium">7v7</button>
+        <button data-filter-value="large">11v11</button>
+      </nav>
+
+      <div class="board">
+        <div class="board__head">
+          <span class="board__label board__label--win">Vinster</span>
+          <span class="board__label board__label--loss">Förluster</span>
+        </div>
+        <ol class="board__list" data-board></ol>
+        <p class="board__empty" data-board-empty hidden>Inga resultat än för den här speltypen.</p>
+      </div>
+    </section>
+
+    <!-- ============ NY TRÄNING ============ -->
+    <section class="view view--flow" data-view="training" hidden>
+      <header class="flow-top">
+        <button class="icon-btn" data-action="flow-back" aria-label="Tillbaka">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <ol class="steps" data-steps>
+          <li data-step-dot="1"><span>1</span>Spelare</li>
+          <li data-step-dot="2"><span>2</span>Speltyp</li>
+          <li data-step-dot="3"><span>3</span>Resultat</li>
+        </ol>
+        <button class="icon-btn" data-action="flow-close" aria-label="Stäng">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+
+      <!-- Steg 1: deltagare -->
+      <div class="flow-step" data-step="1">
+        <div class="flow-head">
+          <p class="eyebrow" data-round-label>Ny träning</p>
+          <h2 class="flow-title">Vilka är med?</h2>
+          <button class="link-btn" data-action="toggle-all">Markera alla</button>
+        </div>
+        <div class="pick-grid" data-pick-grid></div>
+        <div class="flow-bar">
+          <span class="flow-bar__info"><strong data-selected-count>0</strong> valda</span>
+          <button class="btn btn--primary btn--lg" data-action="to-step-2" disabled>Nästa</button>
+        </div>
+      </div>
+
+      <!-- Steg 2: speltyp -->
+      <div class="flow-step" data-step="2" hidden>
+        <div class="flow-head">
+          <p class="eyebrow" data-round-label>Omgång 1</p>
+          <h2 class="flow-title">Välj speltyp</h2>
+        </div>
+        <div class="game-types">
+          <button class="game-type" data-game-type="small">
+            <span class="game-type__label">Small game</span>
+            <span class="game-type__format">5v5</span>
+            <span class="game-type__pitch game-type__pitch--small"></span>
+          </button>
+          <button class="game-type" data-game-type="medium">
+            <span class="game-type__label">Medium game</span>
+            <span class="game-type__format">7v7</span>
+            <span class="game-type__pitch game-type__pitch--medium"></span>
+          </button>
+          <button class="game-type" data-game-type="large">
+            <span class="game-type__label">Large game</span>
+            <span class="game-type__format">11v11</span>
+            <span class="game-type__pitch game-type__pitch--large"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Steg 3: resultat -->
+      <div class="flow-step" data-step="3" hidden>
+        <div class="flow-head">
+          <p class="eyebrow" data-round-label>Omgång 1</p>
+          <h2 class="flow-title">Vem vann?</h2>
+          <button class="link-btn" data-action="rest-loss">Resten = Loss</button>
+        </div>
+        <ul class="result-list" data-result-list></ul>
+        <div class="flow-bar">
+          <span class="flow-bar__info">
+            <strong class="c-win" data-count-win>0</strong> W ·
+            <strong class="c-loss" data-count-loss>0</strong> L
+          </span>
+          <button class="btn btn--primary btn--lg" data-action="save-round" disabled>Spara</button>
+        </div>
+      </div>
+
+      <!-- Klart -->
+      <div class="flow-step flow-done" data-step="done" hidden>
+        <div class="done-badge">
+          <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>
+        </div>
+        <h2 class="flow-title">Omgång sparad</h2>
+        <p class="muted" data-done-info></p>
+        <div class="done-actions">
+          <button class="btn btn--primary btn--lg" data-action="next-round">Ny omgång</button>
+          <button class="btn btn--ghost" data-action="change-players">Ändra deltagare</button>
+          <button class="btn btn--ghost" data-action="finish-training">Avsluta träning</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SPELARE ============ -->
+    <section class="view" data-view="players" hidden>
+      <header class="page-head">
+        <p class="eyebrow">Truppen</p>
+        <h2 class="page-title">Spelare</h2>
+      </header>
+
+      <form class="add-player" data-add-player>
+        <input type="text" name="name" placeholder="Namn" autocomplete="off" maxlength="24" required>
+        <button class="btn btn--primary" type="submit">+ Add player</button>
+      </form>
+
+      <ul class="player-list" data-player-list></ul>
+
+      <h3 class="section-label" data-inactive-label hidden>Inaktiva</h3>
+      <ul class="player-list player-list--inactive" data-player-list-inactive></ul>
+
+      <button class="link-btn link-btn--muted reset-demo" data-action="reset-demo">Återställ demo-data</button>
+    </section>
+  </div>
+
+  <!-- ============ NAVIGERING ============ -->
+  <nav class="tabbar" data-tabbar>
+    <a href="#/" class="tabbar__item" data-tab="board">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>Tavla</span>
+    </a>
+    <a href="#/traning" class="tabbar__cta" data-tab="training">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <span>Ny träning</span>
+    </a>
+    <a href="#/spelare" class="tabbar__item" data-tab="players">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.4 3.4 0 010 6.4M18.5 14.8c1.6.8 2.6 2.5 3 5.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>Spelare</span>
+    </a>
+  </nav>
+
+  <div class="toast" data-toast role="status" aria-live="polite"></div>
+
+  <script src="js/demo-data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

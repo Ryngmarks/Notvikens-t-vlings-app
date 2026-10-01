@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Ritad efter Notvikens IK:s emblem. Ersätt gärna med originalet som assets/logo.png -->
+  <defs>
+    <g id="leaf"><path d="M0 0c5-4 13-4 18 0c-5 4-13 4-18 0z"/></g>
+  </defs>
+  <circle cx="100" cy="100" r="98" fill="#0a0a0a"/>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#f4e300" stroke-width="6"/>
+  <circle cx="100" cy="100" r="82" fill="none" stroke="#f4e300" stroke-width="1.5"/>
+  <g fill="#f4e300">
+    <!-- lagerkrans vänster -->
+    <g transform="translate(100 160)">
+      <g transform="rotate(-150) translate(14 0)"><use href="#leaf"/></g>
+      <g transform="rotate(-165) translate(26 0) rotate(-20)"><use href="#leaf"/></g>
+      <g transform="rotate(-180) translate(38 0) rotate(-25)"><use href="#leaf"/></g>
+      <g transform="rotate(-195) translate(50 0) rotate(-30)"><use href="#leaf"/></g>
+      <g transform="rotate(-208) translate(60 0) rotate(-35)"><use href="#leaf"/></g>
+      <g transform="rotate(-220) translate(68 0) rotate(-40)"><use href="#leaf"/></g>
+      <g transform="rotate(-232) translate(74 0) rotate(-45)"><use href="#leaf"/></g>
+      <g transform="rotate(-150) translate(14 0)"><use href="#leaf"/></g>
+      <!-- höger -->
+      <g transform="rotate(-30) translate(14 0) scale(-1 1) rotate(180)"><use href="#leaf"/></g>
+      <g transform="rotate(-15) translate(26 0) rotate(20)"><use href="#leaf"/></g>
+      <g transform="rotate(0) translate(38 0) rotate(25)"><use href="#leaf"/></g>
+      <g transform="rotate(15) translate(50 0) rotate(30)"><use href="#leaf"/></g>
+      <g transform="rotate(28) translate(60 0) rotate(35)"><use href="#leaf"/></g>
+      <g transform="rotate(40) translate(68 0) rotate(40)"><use href="#leaf"/></g>
+      <g transform="rotate(52) translate(74 0) rotate(45)"><use href="#leaf"/></g>
+    </g>
+    <path d="M92 160h16v6c0 3-3 4-8 4s-8-1-8-4z"/>
+  </g>
+  <!-- sköld -->
+  <path d="M68 62h64v56l-32 28-32-28z" fill="#0a0a0a" stroke="#f4e300" stroke-width="5" stroke-linejoin="miter"/>
+  <!-- N -->
+  <path d="M80 30h11l18 30V30h11v44h-11L91 44v30H80z" fill="#f4e300" stroke="#0a0a0a" stroke-width="2.5"/>
+  <!-- IK -->
+  <g fill="#f4e300">
+    <rect x="80" y="92" width="7" height="24"/>
+    <path d="M96 92h7v9l9-9h9l-11 11 12 13h-9l-10-11v11h-7z"/>
+  </g>
+</svg>
