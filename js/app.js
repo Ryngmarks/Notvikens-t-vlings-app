@@ -7,7 +7,8 @@
     medium: { label: 'Medium game', format: '7v7' },
     large: { label: 'Large game', format: '11v11' },
   };
-  const ACTIVE_KEY = 'notviken-active-training';
+  // Separat nyckel per läge så att en demo-träning aldrig skickas till Supabase
+  const ACTIVE_KEY = `notviken-active-training-${Store.mode}`;
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -338,8 +339,7 @@
         `${GAME_TYPES[f.gameType].format} · ${wins} vinster · ${entries.length - wins} förluster · omgång ${state.active.rounds} idag`;
       goStep('done');
     } catch (err) {
-      console.error(err);
-      toast('Kunde inte spara – försök igen');
+      fail(err, 'Kunde inte spara – försök igen');
       btn.disabled = false;
     }
   }
@@ -378,21 +378,35 @@
     const name = input.value.trim();
     if (!name) { input.value = p.name; return; }
     if (name === p.name) return;
-    await Store.updatePlayer(id, { name });
-    await refresh();
-    toast(`Namn ändrat till ${name}`);
+    try {
+      await Store.updatePlayer(id, { name });
+      await refresh();
+      toast(`Namn ändrat till ${name}`);
+    } catch (err) {
+      fail(err, 'Kunde inte byta namn');
+      input.value = p.name;
+    }
   }
 
   async function toggleActive(input) {
     const id = input.closest('[data-player]').dataset.player;
-    await Store.updatePlayer(id, { active: input.checked });
-    await refresh();
-    const p = state.players.find((x) => x.id === id);
+    try {
+      await Store.updatePlayer(id, { active: input.checked });
+      await refresh();
+      const p = state.players.find((x) => x.id === id);
+      toast(`${p.name} är nu ${p.active ? 'aktiv' : 'inaktiv'}`);
+    } catch (err) {
+      fail(err, 'Kunde inte spara');
+    }
     renderPlayers();
-    toast(`${p.name} är nu ${p.active ? 'aktiv' : 'inaktiv'}`);
   }
 
   /* ---------------- Toast ---------------- */
+
+  function fail(err, msg) {
+    console.error(err);
+    toast(navigator.onLine === false ? 'Ingen internetanslutning' : msg);
+  }
 
   let toastTimer;
   function toast(msg) {
@@ -516,11 +530,18 @@
       const input = e.target.elements.name;
       const name = input.value.trim();
       if (!name) return;
-      await Store.addPlayer(name);
-      input.value = '';
-      await refresh();
-      renderPlayers();
-      toast(`${name} tillagd`);
+      const btn = e.target.querySelector('button');
+      btn.disabled = true;
+      try {
+        await Store.addPlayer(name);
+        input.value = '';
+        await refresh();
+        renderPlayers();
+        toast(`${name} tillagd`);
+      } catch (err) {
+        fail(err, 'Kunde inte lägga till spelaren');
+      }
+      btn.disabled = false;
     });
 
     const list = $('.view[data-view="players"]');
@@ -533,6 +554,17 @@
     });
 
     window.addEventListener('hashchange', route);
+
+    // Hämta nytt när appen öppnas igen – någon annan kan ha registrerat under tiden
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState !== 'visible' || Store.mode === 'demo') return;
+      try {
+        await refresh();
+        const page = document.body.dataset.page;
+        if (page === 'board') renderBoard();
+        if (page === 'players' && !document.activeElement.matches('input')) renderPlayers();
+      } catch (err) { console.error(err); }
+    });
   }
 
   /* ---------------- Start ---------------- */
@@ -548,7 +580,13 @@
     loadHeroPhoto();
     $('[data-team-name]').textContent = TEAM.name;
     $('[data-team-sub]').textContent = TEAM.sub;
-    await refresh();
+    $('[data-action="reset-demo"]').hidden = Store.mode !== 'demo';
+    try {
+      await refresh();
+    } catch (err) {
+      fail(err, 'Kunde inte hämta data – kolla anslutningen');
+      $('[data-board-empty]').textContent = 'Kunde inte hämta data. Dra ned eller ladda om sidan för att försöka igen.';
+    }
     bind();
     route();
   }

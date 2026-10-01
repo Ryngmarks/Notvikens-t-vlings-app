@@ -13,10 +13,13 @@ python3 -m http.server 8000
 # öppna http://localhost:8000
 ```
 
-## Läge just nu: demo
+## Demo eller Supabase
 
-Data genereras i `js/demo-data.js` (18 spelare, 18 träningar) och sparas i webbläsarens localStorage.
-"Återställ demo-data" längst ned på Spelare-sidan nollställer.
+Appen väljer läge automatiskt utifrån `js/config.js`:
+
+- **Tomma fält → demo-läge.** Påhittad data (18 spelare, 18 träningar) sparas i webbläsaren.
+  "Återställ demo-data" längst ned på Spelare-sidan nollställer.
+- **Ifyllda fält → Supabase.** All data sparas i databasen och delas mellan alla som öppnar appen.
 
 ## Struktur
 
@@ -24,7 +27,8 @@ Data genereras i `js/demo-data.js` (18 spelare, 18 träningar) och sparas i webb
 index.html           alla vyer (tavla, ny träning, spelare)
 css/styles.css       design – tema-variabler överst
 js/app.js            gränssnitt och logik
-js/store.js          datalager (byts mot Supabase)
+js/config.js         Supabase-nycklar
+js/store.js          datalager (Supabase eller demo)
 js/demo-data.js      demo-data
 assets/logo.png      lagets emblem
 supabase/schema.sql  tabeller för Supabase
@@ -37,9 +41,15 @@ supabase/schema.sql  tabeller för Supabase
 - Färgerna styrs av CSS-variablerna överst i `css/styles.css`:
   `--primary`, `--secondary`, `--accent`, `--background`, `--surface`, `--text`, `--muted`.
 
-## Supabase (nästa steg)
+## Koppla på Supabase
 
-1. Kör `supabase/schema.sql` i Supabase.
-2. Byt implementationen i `js/store.js` mot Supabase-anrop – samma funktioner, inget annat i appen behöver ändras.
+1. Skapa ett projekt på [supabase.com](https://supabase.com) (gratisnivån räcker).
+2. **SQL Editor → New query**, klistra in hela `supabase/schema.sql` och kör.
+3. **Project Settings → API**: kopiera *Project URL* och *anon public*-nyckeln.
+4. Klistra in dem i `js/config.js`.
+5. Lägg till lagets spelare under **Spelare** i appen.
+
+anon-nyckeln är gjord för att ligga i webbläsaren, så den får finnas i koden.
+Ingen inloggning: alla med länken kan registrera resultat och ändra spelare, men inget kan raderas via appen.
 
 En "omgång" = alla `results` med samma `training_session_id` och `created_at`.

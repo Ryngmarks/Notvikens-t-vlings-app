@@ -1,5 +1,6 @@
 -- Notvikens IK – Träningsliga
--- Kör i Supabase SQL Editor när demon är godkänd.
+-- Kör hela filen i Supabase: SQL Editor → New query → klistra in → Run.
+-- Går att köra flera gånger utan att något förstörs.
 
 create table if not exists players (
   id         uuid primary key default gen_random_uuid(),
@@ -28,14 +29,27 @@ create index if not exists results_player_idx  on results (player_id);
 create index if not exists results_session_idx on results (training_session_id);
 
 -- Ingen inloggning/roller: appen använder anon-nyckeln.
+-- Alla med länken kan läsa och registrera, men inget kan raderas från appen.
+grant select, insert, update on players           to anon;
+grant select, insert         on training_sessions to anon;
+grant select, insert         on results           to anon;
+
 alter table players           enable row level security;
 alter table training_sessions enable row level security;
 alter table results           enable row level security;
 
-create policy "public read"   on players           for select using (true);
-create policy "public insert" on players           for insert with check (true);
-create policy "public update" on players           for update using (true);
-create policy "public read"   on training_sessions for select using (true);
-create policy "public insert" on training_sessions for insert with check (true);
-create policy "public read"   on results           for select using (true);
-create policy "public insert" on results           for insert with check (true);
+drop policy if exists "public read"   on players;
+drop policy if exists "public insert" on players;
+drop policy if exists "public update" on players;
+drop policy if exists "public read"   on training_sessions;
+drop policy if exists "public insert" on training_sessions;
+drop policy if exists "public read"   on results;
+drop policy if exists "public insert" on results;
+
+create policy "public read"   on players           for select to anon using (true);
+create policy "public insert" on players           for insert to anon with check (true);
+create policy "public update" on players           for update to anon using (true) with check (true);
+create policy "public read"   on training_sessions for select to anon using (true);
+create policy "public insert" on training_sessions for insert to anon with check (true);
+create policy "public read"   on results           for select to anon using (true);
+create policy "public insert" on results           for insert to anon with check (true);
