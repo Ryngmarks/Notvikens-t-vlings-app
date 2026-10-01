@@ -10,6 +10,6 @@
  * Använd ALDRIG "Secret key" / "service_role" här – den ger full åtkomst.
  */
 window.APP_CONFIG = {
-  SUPABASE_URL: '',
+  SUPABASE_URL: 'https://plpdcathcozyjraonouo.supabase.co',
   SUPABASE_KEY: '',
 };

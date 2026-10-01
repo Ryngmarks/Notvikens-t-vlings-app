@@ -19,7 +19,8 @@
   /* ================= Supabase ================= */
 
   function createSupabaseStore(baseUrl, key) {
-    const api = baseUrl.replace(/\/+$/, '') + '/rest/v1/';
+    // Tål att adressen klistrats in med /rest/v1/ på slutet
+    const api = baseUrl.trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '') + '/rest/v1/';
     const PAGE = 1000; // Supabase returnerar max 1000 rader per anrop
 
     // Nya nycklar (sb_publishable_…) skickas bara som apikey.
