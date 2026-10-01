@@ -26,13 +26,13 @@ css/styles.css       design – tema-variabler överst
 js/app.js            gränssnitt och logik
 js/store.js          datalager (byts mot Supabase)
 js/demo-data.js      demo-data
-assets/logo.svg      ritad version av emblemet
+assets/logo.png      lagets emblem
 supabase/schema.sql  tabeller för Supabase
 ```
 
 ## Logotyp & färger
 
-- Lägg originalloggan som `assets/logo.png` – den används automatiskt (annars visas `logo.svg`).
+- Loggan ligger i `assets/logo.png` – byt filen för att byta logga.
 - Färgerna styrs av CSS-variablerna överst i `css/styles.css`:
   `--primary`, `--secondary`, `--accent`, `--background`, `--surface`, `--text`, `--muted`.
 
