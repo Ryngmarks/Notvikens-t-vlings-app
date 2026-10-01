@@ -11,5 +11,5 @@
  */
 window.APP_CONFIG = {
   SUPABASE_URL: 'https://plpdcathcozyjraonouo.supabase.co',
-  SUPABASE_KEY: '',
+  SUPABASE_KEY: 'sb_publishable_a2vRSPTIlt8XQu97Zq6m_w_XujODIIz',
 };
