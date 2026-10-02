@@ -879,6 +879,40 @@ body.is-locked .tabbar { display: none; }
   transition: border-color .2s;
 }
 .field input:focus { border-color: var(--primary); }
+.password { position: relative; display: block; }
+.password input { width: 100%; padding-right: 52px; }
+.password__toggle {
+  position: absolute; top: 0; right: 0;
+  width: 52px; height: 52px;
+  display: grid; place-items: center;
+  color: var(--muted);
+}
+.password__toggle svg { width: 22px; height: 22px; }
+.password__toggle[aria-pressed="true"] { color: var(--primary); }
+
+.remember {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 4px 0;
+  cursor: pointer;
+  user-select: none;
+}
+.remember input { position: absolute; opacity: 0; pointer-events: none; }
+.remember__box {
+  flex: none;
+  width: 24px; height: 24px;
+  display: grid; place-items: center;
+  margin-top: 1px;
+  border-radius: 7px;
+  border: 1.5px solid color-mix(in srgb, var(--text) 30%, transparent);
+  transition: background .2s, border-color .2s;
+}
+.remember__box svg { width: 16px; height: 16px; fill: none; stroke: var(--on-primary); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity .15s; }
+.remember input:checked + .remember__box { background: var(--primary); border-color: var(--primary); }
+.remember input:checked + .remember__box svg { opacity: 1; }
+.remember input:focus-visible + .remember__box { outline: 2px solid var(--primary); outline-offset: 2px; }
+.remember__text { display: grid; gap: 2px; font-weight: 600; font-size: 15px; }
+.remember__text small { font-weight: 400; font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+
 .login__error {
   margin: 0;
   padding: 10px 14px;

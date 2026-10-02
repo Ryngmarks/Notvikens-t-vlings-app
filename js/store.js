@@ -30,14 +30,22 @@
        Databasen svarar bara inloggade användare (se schema.sql),
        så utan giltig inloggning går ingen data att läsa eller skriva. */
 
+    // "Kom ihåg mig": localStorage (kvar tills man loggar ut).
+    // Annars sessionStorage (borta när webbläsaren stängs).
     let session = null; // { access_token, refresh_token, expires_at, email }
-    try { session = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { /* ignorera */ }
+    let storage = window.localStorage;
+    try {
+      const fromSession = sessionStorage.getItem(SESSION_KEY);
+      if (fromSession) { session = JSON.parse(fromSession); storage = window.sessionStorage; }
+      else session = JSON.parse(localStorage.getItem(SESSION_KEY));
+    } catch (e) { /* ignorera */ }
 
     function setSession(s) {
       session = s;
       try {
-        if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s));
-        else localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(SESSION_KEY);
+        sessionStorage.removeItem(SESSION_KEY);
+        if (s) storage.setItem(SESSION_KEY, JSON.stringify(s));
       } catch (e) { /* ignorera */ }
     }
 
@@ -145,7 +153,8 @@
       isLoggedIn: () => !!session,
       userEmail: () => (session && session.email) || '',
 
-      async signIn(email, password) {
+      async signIn(email, password, remember = true) {
+        storage = remember ? window.localStorage : window.sessionStorage;
         try {
           const d = await authRequest('token?grant_type=password', { email: email.trim(), password });
           setSession(toSession(d));

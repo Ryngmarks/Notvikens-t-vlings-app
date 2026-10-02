@@ -425,6 +425,10 @@
     const form = $('[data-login-form]');
     form.querySelector('button').disabled = false;
     form.elements.password.value = '';
+    setPasswordVisible(false);
+    if (!form.elements.email.value) {
+      try { form.elements.email.value = localStorage.getItem(EMAIL_KEY) || ''; } catch (e) { /* ignorera */ }
+    }
     (form.elements.email.value ? form.elements.password : form.elements.email).focus();
   }
 
@@ -443,11 +447,34 @@
     route();
   }
 
+  const EMAIL_KEY = 'notviken-remembered-email';
+
+  function rememberEmail(email) {
+    try {
+      if (email) localStorage.setItem(EMAIL_KEY, email);
+      else localStorage.removeItem(EMAIL_KEY);
+    } catch (e) { /* ignorera */ }
+  }
+
+  // Be telefonens/webbläsarens lösenordshanterare spara inloggningen
+  // (Chrome/Android/Edge). Safari/iOS erbjuder det själv när formuläret skickas.
+  function offerToSavePassword(form) {
+    if (!window.PasswordCredential || !navigator.credentials) return;
+    try {
+      navigator.credentials.store(new PasswordCredential({
+        id: form.elements.email.value.trim(),
+        password: form.elements.password.value,
+        name: form.elements.email.value.trim(),
+      })).catch(() => {});
+    } catch (e) { /* stöds inte – inget att göra */ }
+  }
+
   async function login(e) {
     e.preventDefault();
     const form = e.target;
     const email = form.elements.email.value.trim();
     const password = form.elements.password.value;
+    const remember = form.elements.remember.checked;
     const err = $('[data-login-error]');
     if (!email || !password) {
       err.textContent = 'Fyll i e-post och lösenord';
@@ -458,7 +485,9 @@
     btn.disabled = true;
     btn.textContent = 'Loggar in…';
     try {
-      await Store.signIn(email, password);
+      await Store.signIn(email, password, remember);
+      rememberEmail(remember ? email : '');
+      offerToSavePassword(form);
       err.hidden = true;
       await unlock();
     } catch (e2) {
@@ -470,6 +499,14 @@
     }
     btn.disabled = false;
     btn.textContent = 'Logga in';
+  }
+
+  function setPasswordVisible(show) {
+    const input = $('#login-password');
+    const btn = $('[data-action="toggle-password"]');
+    input.type = show ? 'text' : 'password';
+    btn.setAttribute('aria-pressed', show);
+    btn.setAttribute('aria-label', show ? 'Dölj lösenord' : 'Visa lösenord');
   }
 
   async function logout() {
@@ -583,6 +620,7 @@
           if (state.active) toast('Träningen pågår – fortsätt från tavlan');
           break;
         case 'logout': logout(); break;
+        case 'toggle-password': setPasswordVisible($('#login-password').type === 'password'); break;
         case 'reset-demo':
           if (confirm('Återställ all demo-data?')) {
             Store.resetDemo().then(async () => {

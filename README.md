@@ -67,6 +67,9 @@ vilken adress man går till eller vad man gör i webbläsaren.
    Ett gemensamt lagkonto räcker, eller ett per ledare.
 3. Ta bort en användare i samma lista för att stänga ute någon.
 
-Man förblir inloggad på telefonen tills man trycker **Logga ut** (längst ned på Spelare).
+Med **Kom ihåg mig** (förvalt) sparas e-posten och man förblir inloggad tills man trycker
+**Logga ut** (längst ned på Spelare). Utan den loggas man ut när webbläsaren stängs –
+bra på en lånad telefon. Lösenordet sparas av telefonens/webbläsarens egen lösenordshanterare
+(iCloud-nyckelring, Google m.fl.), aldrig av appen.
 
 En "omgång" = alla `results` med samma `training_session_id` och `created_at`.
