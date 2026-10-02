@@ -50,9 +50,23 @@ supabase/schema.sql  tabeller för Supabase
    - **Project Settings → API Keys → Publishable key** (`sb_publishable_…`).
      Äldre projekt: fliken *Legacy API Keys* → *anon public* (`eyJ…`). Båda fungerar.
 4. Klistra in dem i `js/config.js` (`SUPABASE_URL` och `SUPABASE_KEY`).
-5. Lägg till lagets spelare under **Spelare** i appen.
 
-Publishable-/anon-nyckeln är gjord för att ligga i webbläsaren, så den får finnas i koden. Använd aldrig *Secret key* / *service_role*.
-Ingen inloggning: alla med länken kan registrera resultat och ändra spelare, men inget kan raderas via appen.
+Publishable-/anon-nyckeln är gjord för att ligga i webbläsaren, så den får finnas i koden.
+Använd aldrig *Secret key* / *service_role* – appen vägrar använda en sådan.
+
+## Inloggning
+
+I Supabase-läge måste man logga in med e-post och lösenord. Skyddet sitter i databasen:
+utan inloggning svarar Supabase inte med någon data och tar inte emot något, oavsett
+vilken adress man går till eller vad man gör i webbläsaren.
+
+1. **Stäng av egen registrering:** *Authentication → Sign In / Providers* →
+   stäng av **Allow new users to sign up**. Annars kan vem som helst skapa ett konto.
+2. **Skapa konton:** *Authentication → Users → Add user → Create new user*.
+   Fyll i e-post och lösenord och kryssa i **Auto Confirm User**.
+   Ett gemensamt lagkonto räcker, eller ett per ledare.
+3. Ta bort en användare i samma lista för att stänga ute någon.
+
+Man förblir inloggad på telefonen tills man trycker **Logga ut** (längst ned på Spelare).
 
 En "omgång" = alla `results` med samma `training_session_id` och `created_at`.

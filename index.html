@@ -14,10 +14,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body class="is-locked">
   <div class="hero-bg" data-hero-bg></div>
   <div class="stripes stripes--tl"></div>
   <div class="stripes stripes--br"></div>
+
+  <!-- ============ INLOGGNING ============ -->
+  <section class="login" data-login hidden>
+    <img class="login__logo" src="assets/logo.png" alt="Notvikens IK">
+    <p class="eyebrow">Träningsligan</p>
+    <h1 class="login__title">Notvikens IK</h1>
+    <form class="login__form" data-login-form novalidate>
+      <label class="field">
+        <span>E-post</span>
+        <input type="email" name="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" required>
+      </label>
+      <label class="field">
+        <span>Lösenord</span>
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <p class="login__error" data-login-error role="alert" hidden></p>
+      <button class="btn btn--primary btn--lg" type="submit">Logga in</button>
+    </form>
+  </section>
 
   <div class="app">
 
@@ -178,6 +197,10 @@
       <h3 class="section-label" data-inactive-label hidden>Inaktiva</h3>
       <ul class="player-list player-list--inactive" data-player-list-inactive></ul>
 
+      <div class="account" data-account hidden>
+        <span class="account__email" data-account-email></span>
+        <button class="btn btn--ghost btn--small" data-action="logout">Logga ut</button>
+      </div>
       <button class="link-btn link-btn--muted reset-demo" data-action="reset-demo">Återställ demo-data</button>
     </section>
   </div>

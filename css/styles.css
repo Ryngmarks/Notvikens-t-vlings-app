@@ -822,6 +822,83 @@ body.is-flow .tabbar { display: none; }
 .tabbar__cta svg { width: 22px; height: 22px; }
 
 /* =========================================================
+   INLOGGNING
+   ========================================================= */
+body.is-locked .app,
+body.is-locked .tabbar { display: none; }
+
+.login {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: max(32px, env(safe-area-inset-top)) var(--gutter) max(32px, env(safe-area-inset-bottom));
+  text-align: center;
+  animation: view-in .5s var(--ease);
+}
+.login__logo {
+  width: 132px; height: 132px;
+  margin-bottom: 22px;
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,.7)) drop-shadow(0 0 28px color-mix(in srgb, var(--primary) 25%, transparent));
+}
+.login__title {
+  margin: 4px 0 30px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 38px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.login__form {
+  width: 100%;
+  display: grid; gap: 14px;
+  padding: 22px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(34,34,34,.85), rgba(18,18,18,.92));
+  border: 1px solid rgba(255,255,255,.09);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 24px 50px -24px #000;
+  text-align: left;
+}
+.login__form .btn { margin-top: 6px; width: 100%; }
+.login__form .btn:disabled { opacity: .6; }
+.field { display: grid; gap: 6px; }
+.field span {
+  font-family: var(--font-display);
+  font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: #b9b9b4;
+}
+.field input {
+  height: 52px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--line);
+  background: var(--background);
+  outline: none;
+  font-size: 16px; /* hindrar zoom i iOS */
+  transition: border-color .2s;
+}
+.field input:focus { border-color: var(--primary); }
+.login__error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--loss) 14%, transparent);
+  color: color-mix(in srgb, var(--loss) 75%, #fff);
+  font-size: 14px; font-weight: 600;
+}
+
+.account {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: 36px;
+  padding: 12px 12px 12px 18px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.account__email { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 14px; }
+
+/* =========================================================
    TOAST
    ========================================================= */
 .toast {

@@ -28,11 +28,19 @@ create table if not exists results (
 create index if not exists results_player_idx  on results (player_id);
 create index if not exists results_session_idx on results (training_session_id);
 
--- Ingen inloggning/roller: appen använder anon-nyckeln.
--- Alla med länken kan läsa och registrera, men inget kan raderas från appen.
-grant select, insert, update on players           to anon;
-grant select, insert         on training_sessions to anon;
-grant select, insert         on results           to anon;
+-- ============================================================
+-- Behörighet: bara INLOGGADE användare kommer åt datan.
+-- Utan inloggning (bara publishable/anon-nyckeln) går ingenting
+-- att läsa eller skriva – oavsett vilken adress man går till.
+-- Inget kan raderas, och sparade resultat kan inte ändras, via appen.
+-- ============================================================
+
+-- Ta bort tidigare öppna rättigheter (från den första versionen av schemat)
+revoke all on players, training_sessions, results from anon;
+
+grant select, insert, update on players           to authenticated;
+grant select, insert         on training_sessions to authenticated;
+grant select, insert         on results           to authenticated;
 
 alter table players           enable row level security;
 alter table training_sessions enable row level security;
@@ -46,10 +54,18 @@ drop policy if exists "public insert" on training_sessions;
 drop policy if exists "public read"   on results;
 drop policy if exists "public insert" on results;
 
-create policy "public read"   on players           for select to anon using (true);
-create policy "public insert" on players           for insert to anon with check (true);
-create policy "public update" on players           for update to anon using (true) with check (true);
-create policy "public read"   on training_sessions for select to anon using (true);
-create policy "public insert" on training_sessions for insert to anon with check (true);
-create policy "public read"   on results           for select to anon using (true);
-create policy "public insert" on results           for insert to anon with check (true);
+drop policy if exists "team read"   on players;
+drop policy if exists "team insert" on players;
+drop policy if exists "team update" on players;
+drop policy if exists "team read"   on training_sessions;
+drop policy if exists "team insert" on training_sessions;
+drop policy if exists "team read"   on results;
+drop policy if exists "team insert" on results;
+
+create policy "team read"   on players           for select to authenticated using (true);
+create policy "team insert" on players           for insert to authenticated with check (true);
+create policy "team update" on players           for update to authenticated using (true) with check (true);
+create policy "team read"   on training_sessions for select to authenticated using (true);
+create policy "team insert" on training_sessions for insert to authenticated with check (true);
+create policy "team read"   on results           for select to authenticated using (true);
+create policy "team insert" on results           for insert to authenticated with check (true);

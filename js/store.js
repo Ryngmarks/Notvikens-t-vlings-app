@@ -20,27 +20,105 @@
 
   function createSupabaseStore(baseUrl, key) {
     // Tål att adressen klistrats in med /rest/v1/ på slutet
-    const api = baseUrl.trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '') + '/rest/v1/';
+    const root = baseUrl.trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
+    const api = root + '/rest/v1/';
+    const authApi = root + '/auth/v1/';
     const PAGE = 1000; // Supabase returnerar max 1000 rader per anrop
+    const SESSION_KEY = 'notviken-auth-session';
 
-    // Nya nycklar (sb_publishable_…) skickas bara som apikey.
-    // Äldre anon-nycklar är JWT:er (eyJ…) och skickas även som Bearer-token.
-    const auth = key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {};
+    /* ---------- Inloggning (Supabase Auth) ----------
+       Databasen svarar bara inloggade användare (se schema.sql),
+       så utan giltig inloggning går ingen data att läsa eller skriva. */
 
-    async function request(path, { method = 'GET', body, headers = {} } = {}) {
+    let session = null; // { access_token, refresh_token, expires_at, email }
+    try { session = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (e) { /* ignorera */ }
+
+    function setSession(s) {
+      session = s;
+      try {
+        if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+        else localStorage.removeItem(SESSION_KEY);
+      } catch (e) { /* ignorera */ }
+    }
+
+    function authError(msg) {
+      const err = new Error(msg);
+      err.code = 'auth';
+      return err;
+    }
+
+    async function authRequest(path, body, token) {
+      const res = await fetch(authApi + path, {
+        method: 'POST',
+        headers: {
+          apikey: key,
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body || {}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const e = new Error(data.msg || data.error_description || data.message || res.statusText);
+        e.status = res.status;
+        e.errorCode = data.error_code || data.error;
+        throw e;
+      }
+      return data;
+    }
+
+    function toSession(d) {
+      return {
+        access_token: d.access_token,
+        refresh_token: d.refresh_token,
+        expires_at: d.expires_at || Math.floor(Date.now() / 1000) + (d.expires_in || 3600),
+        email: d.user && d.user.email,
+      };
+    }
+
+    // Delas så att flera samtidiga anrop bara förnyar en gång
+    let refreshing = null;
+    function refreshSession() {
+      if (!session) return Promise.reject(authError('Inte inloggad'));
+      if (!refreshing) {
+        refreshing = authRequest('token?grant_type=refresh_token', { refresh_token: session.refresh_token })
+          .then((d) => setSession(toSession(d)))
+          .catch((e) => {
+            // Bara ett nekat svar loggar ut – inte ett tillfälligt nätverksfel
+            if (e.status >= 400 && e.status < 500) setSession(null);
+            throw e.status ? authError('Inloggningen har gått ut') : e;
+          })
+          .finally(() => { refreshing = null; });
+      }
+      return refreshing;
+    }
+
+    async function accessToken() {
+      if (!session) throw authError('Inte inloggad');
+      if (session.expires_at - 60 < Date.now() / 1000) await refreshSession();
+      return session.access_token;
+    }
+
+    async function request(path, { method = 'GET', body, headers = {} } = {}, retried = false) {
+      const token = await accessToken();
       const res = await fetch(api + path, {
         method,
         headers: {
           apikey: key,
-          ...auth,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           ...headers,
         },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
+      if (res.status === 401 && !retried) {
+        await refreshSession();
+        return request(path, { method, body, headers }, true);
+      }
       if (!res.ok) {
         let msg = res.statusText;
         try { msg = (await res.json()).message || msg; } catch (e) { /* ignorera */ }
+        if (res.status === 401) { setSession(null); throw authError(msg); }
         throw new Error(`Supabase ${res.status}: ${msg}`);
       }
       return res.status === 204 ? null : res.json();
@@ -63,6 +141,27 @@
 
     return {
       mode: 'supabase',
+      requiresLogin: true,
+      isLoggedIn: () => !!session,
+      userEmail: () => (session && session.email) || '',
+
+      async signIn(email, password) {
+        try {
+          const d = await authRequest('token?grant_type=password', { email: email.trim(), password });
+          setSession(toSession(d));
+        } catch (e) {
+          if (e.status === 400 || e.errorCode === 'invalid_credentials' || e.errorCode === 'invalid_grant') {
+            throw authError('Fel e-post eller lösenord');
+          }
+          throw e;
+        }
+      },
+
+      async signOut() {
+        const token = session && session.access_token;
+        setSession(null);
+        if (token) { try { await authRequest('logout', {}, token); } catch (e) { /* utloggad lokalt ändå */ } }
+      },
 
       listPlayers: () => selectAll('players', 'id,name,active,created_at', 'created_at.asc,id.asc'),
 
@@ -132,6 +231,11 @@
 
     return {
       mode: 'demo',
+      requiresLogin: false,
+      isLoggedIn: () => true,
+      userEmail: () => '',
+      async signIn() {},
+      async signOut() {},
 
       async listPlayers() {
         return clone(db.players);

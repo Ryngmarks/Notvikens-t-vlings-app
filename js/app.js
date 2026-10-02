@@ -405,7 +405,77 @@
 
   function fail(err, msg) {
     console.error(err);
+    if (err && err.code === 'auth') { showLogin('Du har loggats ut – logga in igen'); return; }
     toast(navigator.onLine === false ? 'Ingen internetanslutning' : msg);
+  }
+
+  /* ---------------- Inloggning ---------------- */
+
+  function showLogin(message) {
+    document.body.classList.add('is-locked');
+    // Töm allt som visats så att inget ligger kvar bakom inloggningen
+    state.players = []; state.sessions = []; state.results = [];
+    $('[data-board]').innerHTML = '';
+    $('[data-player-list]').innerHTML = '';
+    $('[data-player-list-inactive]').innerHTML = '';
+    $('[data-login]').hidden = false;
+    const err = $('[data-login-error]');
+    err.textContent = message || '';
+    err.hidden = !message;
+    const form = $('[data-login-form]');
+    form.querySelector('button').disabled = false;
+    form.elements.password.value = '';
+    (form.elements.email.value ? form.elements.password : form.elements.email).focus();
+  }
+
+  async function unlock() {
+    $('[data-login]').hidden = true;
+    document.body.classList.remove('is-locked');
+    $('[data-account]').hidden = !Store.requiresLogin;
+    $('[data-account-email]').textContent = Store.userEmail();
+    try {
+      await refresh();
+    } catch (err) {
+      fail(err, 'Kunde inte hämta data – kolla anslutningen');
+      if (err.code === 'auth') return;
+      $('[data-board-empty]').textContent = 'Kunde inte hämta data. Ladda om sidan för att försöka igen.';
+    }
+    route();
+  }
+
+  async function login(e) {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.elements.email.value.trim();
+    const password = form.elements.password.value;
+    const err = $('[data-login-error]');
+    if (!email || !password) {
+      err.textContent = 'Fyll i e-post och lösenord';
+      err.hidden = false;
+      return;
+    }
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = 'Loggar in…';
+    try {
+      await Store.signIn(email, password);
+      err.hidden = true;
+      await unlock();
+    } catch (e2) {
+      console.error(e2);
+      err.textContent = e2.code === 'auth' ? e2.message
+        : navigator.onLine === false ? 'Ingen internetanslutning' : 'Kunde inte logga in – försök igen';
+      err.hidden = false;
+      form.elements.password.select();
+    }
+    btn.disabled = false;
+    btn.textContent = 'Logga in';
+  }
+
+  async function logout() {
+    await Store.signOut();
+    location.hash = '#/';
+    showLogin();
   }
 
   let toastTimer;
@@ -420,6 +490,7 @@
   /* ---------------- Routing ---------------- */
 
   function route() {
+    if (document.body.classList.contains('is-locked')) return; // inget visas utan inloggning
     const hash = location.hash.replace(/^#\/?/, '');
     const view = hash === 'traning' ? 'training' : hash === 'spelare' ? 'players' : 'board';
     $$('[data-view]').forEach((el) => { el.hidden = el.dataset.view !== view; });
@@ -511,6 +582,7 @@
           location.hash = '#/';
           if (state.active) toast('Träningen pågår – fortsätt från tavlan');
           break;
+        case 'logout': logout(); break;
         case 'reset-demo':
           if (confirm('Återställ all demo-data?')) {
             Store.resetDemo().then(async () => {
@@ -558,13 +630,18 @@
     // Hämta nytt när appen öppnas igen – någon annan kan ha registrerat under tiden
     document.addEventListener('visibilitychange', async () => {
       if (document.visibilityState !== 'visible' || Store.mode === 'demo') return;
+      if (document.body.classList.contains('is-locked')) return;
       try {
         await refresh();
         const page = document.body.dataset.page;
         if (page === 'board') renderBoard();
         if (page === 'players' && !document.activeElement.matches('input')) renderPlayers();
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        if (err.code === 'auth') fail(err); else console.error(err);
+      }
     });
+
+    $('[data-login-form]').addEventListener('submit', login);
   }
 
   /* ---------------- Start ---------------- */
@@ -581,14 +658,9 @@
     $('[data-team-name]').textContent = TEAM.name;
     $('[data-team-sub]').textContent = TEAM.sub;
     $('[data-action="reset-demo"]').hidden = Store.mode !== 'demo';
-    try {
-      await refresh();
-    } catch (err) {
-      fail(err, 'Kunde inte hämta data – kolla anslutningen');
-      $('[data-board-empty]').textContent = 'Kunde inte hämta data. Dra ned eller ladda om sidan för att försöka igen.';
-    }
     bind();
-    route();
+    if (Store.requiresLogin && !Store.isLoggedIn()) showLogin();
+    else await unlock();
   }
 
   init();
