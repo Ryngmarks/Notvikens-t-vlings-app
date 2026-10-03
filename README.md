@@ -30,6 +30,8 @@ js/app.js            gränssnitt och logik
 js/config.js         Supabase-nycklar
 js/store.js          datalager (Supabase eller demo)
 js/demo-data.js      demo-data
+js/tactics/          taktiktavla: model.js (data + formationer + pressdemo),
+                     engine.js (animation), board.js (SVG-plan), tactics.js (gränssnitt)
 assets/logo.png      lagets emblem
 supabase/schema.sql  tabeller för Supabase
 ```
@@ -73,3 +75,29 @@ bra på en lånad telefon. Lösenordet sparas av telefonens/webbläsarens egen l
 (iCloud-nyckelring, Google m.fl.), aldrig av appen.
 
 En "omgång" = alla `results` med samma `training_session_id` och `created_at`.
+
+## Taktiktavla
+
+Knappen **Taktik** uppe till höger på tavlan visas bara för den som har behörighet.
+Behörigheten kontrolleras i databasen (tabellen `tactics_access`), så det går inte att ta sig
+förbi genom att skriva adressen `#/taktik` direkt.
+
+**Ge fler tillgång** (Supabase → SQL Editor):
+
+```sql
+insert into tactics_access (email) values ('namn@exempel.se');
+```
+
+**Ta bort tillgång:**
+
+```sql
+delete from tactics_access where email = 'namn@exempel.se';
+```
+
+Personen måste också ha ett inloggningskonto (Authentication → Users).
+
+Taktiker sparas som JSON i tabellen `tactics` (en rad per taktik). Positioner lagras relativt
+(x/y 0–100), så taktiken ser likadan ut på alla skärmar. I demo-läget sparas de i webbläsaren.
+
+Kortkommandon på dator: **Mellanslag** play/paus, **←/→** steg, **N** nytt steg,
+**V/R/P/D** verktyg, **Delete** ta bort vald pil, **Ctrl+Z** ångra.

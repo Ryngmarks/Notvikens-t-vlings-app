@@ -211,6 +211,40 @@
 
       listResults: () =>
         selectAll('results', 'id,training_session_id,player_id,game_type,result,created_at', 'created_at.asc,id.asc'),
+
+      /* ---------- Taktiktavla ----------
+         Behörighet styrs i databasen (tabellen tactics_access, se schema.sql). */
+
+      async canUseTactics() {
+        try {
+          return (await request('rpc/has_tactics_access', { method: 'POST', body: {} })) === true;
+        } catch (e) {
+          if (e.code === 'auth') throw e;
+          return false; // t.ex. om schemat för taktiker inte är kört än
+        }
+      },
+
+      listTactics: () => request('tactics?select=id,name,updated_at&order=updated_at.desc'),
+
+      async getTactic(id) {
+        const [row] = await request(`tactics?id=eq.${encodeURIComponent(id)}&select=id,name,scenario_data,updated_at`);
+        return row || null;
+      },
+
+      async saveTactic({ id, name, scenario_data }) {
+        if (id) {
+          const [row] = await request(`tactics?id=eq.${encodeURIComponent(id)}&select=id,name,updated_at`, {
+            method: 'PATCH', body: { name, scenario_data }, headers: { Prefer: 'return=representation' },
+          });
+          if (row) return row;
+        }
+        const [row] = await request('tactics?select=id,name,updated_at', {
+          method: 'POST', body: [{ name, scenario_data }], headers: { Prefer: 'return=representation' },
+        });
+        return row;
+      },
+
+      deleteTactic: (id) => request(`tactics?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' }),
     };
   }
 
@@ -237,6 +271,14 @@
       (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
 
     let db = load();
+
+    const TACTICS_KEY = 'notviken-tactics-demo-v1';
+    function loadTactics() {
+      try { return JSON.parse(localStorage.getItem(TACTICS_KEY)) || []; } catch (e) { return []; }
+    }
+    function saveTactics(list) {
+      try { localStorage.setItem(TACTICS_KEY, JSON.stringify(list)); } catch (e) { /* ignorera */ }
+    }
 
     return {
       mode: 'demo',
@@ -299,6 +341,35 @@
       async resetDemo() {
         localStorage.removeItem(KEY);
         db = load();
+      },
+
+      /* ---------- Taktiktavla (demo: sparas i webbläsaren) ---------- */
+
+      async canUseTactics() { return true; },
+
+      async listTactics() {
+        return loadTactics()
+          .map(({ id, name, updated_at }) => ({ id, name, updated_at }))
+          .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+      },
+
+      async getTactic(id) {
+        const row = loadTactics().find((t) => t.id === id);
+        return row ? clone(row) : null;
+      },
+
+      async saveTactic({ id, name, scenario_data }) {
+        const list = loadTactics();
+        const now = new Date().toISOString();
+        let row = id && list.find((t) => t.id === id);
+        if (row) Object.assign(row, { name, scenario_data, updated_at: now });
+        else list.push(row = { id: newId(), name, scenario_data, created_at: now, updated_at: now });
+        saveTactics(list);
+        return { id: row.id, name: row.name, updated_at: row.updated_at };
+      },
+
+      async deleteTactic(id) {
+        saveTactics(loadTactics().filter((t) => t.id !== id));
       },
     };
   }

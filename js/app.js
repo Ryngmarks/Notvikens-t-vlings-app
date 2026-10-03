@@ -17,6 +17,7 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const state = {
+    tacticsAllowed: false,
     players: [],
     sessions: [],
     results: [],
@@ -415,6 +416,9 @@
     document.body.classList.add('is-locked');
     // Töm allt som visats så att inget ligger kvar bakom inloggningen
     state.players = []; state.sessions = []; state.results = [];
+    state.tacticsAllowed = false;
+    $('[data-tactics-link]').hidden = true;
+    TacticsUI.reset();
     $('[data-board]').innerHTML = '';
     $('[data-player-list]').innerHTML = '';
     $('[data-player-list-inactive]').innerHTML = '';
@@ -444,6 +448,9 @@
       if (err.code === 'auth') return;
       $('[data-board-empty]').textContent = 'Kunde inte hämta data. Ladda om sidan för att försöka igen.';
     }
+    // Taktiktavlan: bara för användare som finns i tactics_access (kontrolleras i databasen)
+    try { state.tacticsAllowed = await Store.canUseTactics(); } catch (err) { state.tacticsAllowed = false; }
+    $('[data-tactics-link]').hidden = !state.tacticsAllowed;
     route();
   }
 
@@ -529,11 +536,16 @@
   function route() {
     if (document.body.classList.contains('is-locked')) return; // inget visas utan inloggning
     const hash = location.hash.replace(/^#\/?/, '');
-    const view = hash === 'traning' ? 'training' : hash === 'spelare' ? 'players' : 'board';
+    let view = hash === 'traning' ? 'training' : hash === 'spelare' ? 'players' : hash === 'taktik' ? 'tactics' : 'board';
+    if (view === 'tactics' && !state.tacticsAllowed) { location.replace('#/'); view = 'board'; }
+    const leaving = document.body.dataset.page;
+    if (leaving === 'tactics' && view !== 'tactics') TacticsUI.close();
     $$('[data-view]').forEach((el) => { el.hidden = el.dataset.view !== view; });
     $$('[data-tab]').forEach((el) => el.classList.toggle('is-active', el.dataset.tab === view));
     document.body.classList.toggle('is-flow', view === 'training');
+    document.body.classList.toggle('is-tactics', view === 'tactics');
     document.body.dataset.page = view;
+    if (view === 'tactics') TacticsUI.open();
     if (view === 'training') startFlow();
     if (view === 'players') renderPlayers();
     if (view === 'board') {
@@ -696,6 +708,11 @@
     $('[data-team-name]').textContent = TEAM.name;
     $('[data-team-sub]').textContent = TEAM.sub;
     $('[data-action="reset-demo"]').hidden = Store.mode !== 'demo';
+    TacticsUI.init({
+      store: Store,
+      onError: fail,
+      getSquad: () => state.players.filter((p) => p.active).map((p) => p.name).sort((a, b) => a.localeCompare(b, 'sv')),
+    });
     bind();
     if (Store.requiresLogin && !Store.isLoggedIn()) showLogin();
     else await unlock();
